@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebChat</title>
+    <link rel="stylesheet" href="/static/plugins/bootstrap/css/bootstrap.css"/>
+    <style>
+        .context{
+            width: 80%;
+            margin: 0 auto;
+            min-width: 700px;
+
+        }
+        .menu1{
+            width:15%;
+             height:600px;
+            background-color: lightgray;
+        }
+        .chat{
+            width:85%;
+            height:600px;
+        }
+        .right{
+            float:right;
+        }
+        .left{
+            float:left;
+        }
+        .top{
+            height: 50px;
+            margin-left: 10px;
+            margin-top: 10px;
+        }
+        .search{
+            margin-left:10px;
+        }
+        .contact{
+            margin-left: 10px;
+            margin-top: 10px;
+        }
+        .chat-title{
+            background-color: #66afe9;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bolder;
+        }
+        .chat-context{
+            height: 350px;
+            border: 1px solid;
+            overflow: auto;
+        }
+        #chat-context{
+            clear: both;
+        }
+        .chat-expression{
+            background-color: #66afe9;
+            height: 30px;
+            line-height: 30px;
+        }
+        .msg-send{
+            width:100%;
+            height: 150px;
+        }
+        .msg-item{
+            margin: 5px;
+            width: 90%;
+        }
+        .green{
+            background-color:lightgreen;
+            font-size: 18px;
+        }
+        .gray{
+            background-color:lightgray;
+            font-size: 18px;
+        }
+        .msg-con{
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+        .cls1{
+            width: 240px;
+            height: 100px;
+            background: #2aabd2;
+            margin: 5px;
+            float: right;
+}
+
+    </style>
+</head>
+<body>
+<div class="context">
+    <div style="height: 50px;background-color: gray; line-height: 50px;">
+        <a class="right" href="logout.html" style="color:white;font-size: 18px;font-weight: bolder;margin-right: 20px;">退出登录</a>
+    </div>
+
+    <div class="menu1 left">
+        <div class ='top'>
+            <div class="left" style="width: 20%">
+                <img src="/static/imgs/default.png" class="img-rounded">
+            </div>
+            <div class="right" style="width: 75%">
+                <div class="search">
+                    <div class="left " >
+                        <select name="status">
+                            {% for item in request.session.user_info.status_id %}
+                            <option value={{ item.0 }} >{{ item.1 }}</option>
+                            {% endfor %}
+                        </select>
+                        {{ request.session.user_info.status.1}}
+                    </div>
+                    <div class="right " style="margin-right: 20px;">
+                        {{ obj.nickname }}
+                    </div>
+                    <div style="clear: both;"></div>
+                </div>
+                <div class="search">
+                    <input style="width: 95%;border: hidden;background-color: lightgray;" type="text" placeholder="请输入个性签名" >
+                </div>
+            </div>
+            <div style="clear: both;"></div>
+
+        </div>
+
+        <div class = 'search'>
+            <input style="width: 95%;" type="text">
+        </div>
+
+        <div class="contact">
+            <div >
+                <a abby='c1' class='active' onclick= "ChangTab(this);" con_type ="single">联系人</a>
+                <a abby='c2' onclick= "ChangTab(this);" con_type ="group">组群</a>
+	        </div>
+	        <div>
+                <div id='c1'>
+                    {% for item in obj.friends.all %}
+                        <div id ="{{ item.nid }}" onclick="Friend(this)" style="margin: 8px auto;">
+                            <img src="/static/imgs/default.png" class="img-rounded">
+                            <span >{{item.nickname}}</span>
+                            <span class='right' style="display: block;background-color: black;">44</span>
+                        </div>
+
+                    {% endfor %}
+                </div>
+                <div id='c2' class='hide' con_type ="group">群组</div>
+
+	        </div>
+        </div>
+
+    </div>
+    <div class="chat right">
+        <div class="chat-title" con_type ="single" con_id =""></div>
+        <div class="chat-context">
+
+        </div>
+        <div class="chat-expression"></div>
+        <div>
+            <textarea class="msg-send"></textarea>
+        </div>
+
+        <div style="text-align: right;margin-right: 50px;">
+            <button id ='button1' class="btn btn-primary" type="button" >发送</button>
+        </div>
+
+
+    </div>
+    <div style ="clear:both"></div>
+</div>
+    <script src="/static/js/jquery-1.12.4.js"></script>
+    <script src="/static/js/jquery.cookie.js"></script>
+    <script>
+        $(function(){
+            $.ajaxSetup({
+                beforeSend: function(xhr,settings){
+                    xhr.setRequestHeader('X-CSRFtoken', $.cookie('csrftoken'));
+                }
+            });
+
+            //setInterval(get_msg,3000);
+            get_msg();
+
+        })
+
+
+        function ChangTab(ths){
+			$(ths).addClass('active').siblings().removeClass('active');
+			var n = $(ths).attr("abby");
+			var temp ='#'+n;
+			$(temp).removeClass('hide').siblings().addClass('hide');
+			$('.chat-title').attr("con_type",$(ths).attr('con_type'));
+
+		}
+		function Friend(ths) {
+            var n =$(ths).text();
+            var title = "与"+n+"对话中";
+            $('.chat-title').text(title);
+            $('.chat-title').attr("con_id",$(ths).attr('id'));
+        }
+        
+        function get_msg() {
+            $.getJSON("get_msg",function (arg) {
+                    pasermsg(arg);
+                    get_msg();
+                })
+            
+        };
+
+        function pasermsg(arg) {
+            var current_type = $('.chat-title').attr("con_type");
+            var current_id = $('.chat-title').attr("con_id");
+
+            for(var item in arg) {
+                console.log(arg[item]);
+
+                if (arg[item].from == current_id &&arg[item].con_type ==current_type){
+
+                    var msg_ele = "<div style ='overflow: hidden;'>" +
+                                    "<div  class='msg-item '>" +
+                                            "<div  class='left'>" +
+                                                "<img src='/static/imgs/default.png' class='img-rounded'>" +
+                                            "</div>" +
+                                            "<div class='gray left' style ='margin-left:10px;padding:5px;'>" +
+                                                 arg[item].msg
+                                            "</div>" +
+                                            "<div style='clear:both'>"+"</div>" +
+                                    "</div> "+
+                                "</div> ";
+
+                    $(".chat-context").append(msg_ele);
+
+
+
+                };
+
+            };
+
+        }
+
+        $('#button1').click(function () {
+                var msg =$('.msg-send').val();
+                var con_type = $('.chat-title').attr("con_type");
+                var con_id = $('.chat-title').attr("con_id");
+                msg_context ={
+                    "from":"{{ request.session.user_info.nid }}",
+                    "to":con_id,
+                    "msg":msg,
+                    "con_type":con_type,
+                };
+
+                var msg_ele = "<div style ='overflow: hidden;'>" +
+                            "<div  class='msg-item right '  >" +
+                                "<div  class='right' >" +
+                                    "<img src='/static/imgs/default.png' class='img-rounded'>" +
+                                "</div>" +
+                                "<div class='right green' style ='margin-right:10px;padding:5px;'>" +
+                                     msg
+                                "</div>" +
+                                "<div style='clear:both'>"+"</div>" +
+                            "</div> "+
+                        "</div> ";
+                $(".chat-context").append(msg_ele);
+
+                $.post("msg_send",{data:JSON.stringify(msg_context)},function (callback) {
+                    console.log(callback);
+                });
+
+                /*$.ajax({
+                url: 'msg_send',
+                data:data,
+                type:'POST',
+                datatype:JSON,
+                success:function(d){
+                    }
+                })*/
+		    })
+
+    </script>
+</body>
+</html>

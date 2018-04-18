@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/plugins/bootstrap/css/bootstrap.min.css"/>
+    <style>
+        .c1{
+            width:300px;
+            height: 500px;
+            margin: 0 auto;
+        }
+        .c2{
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="c1">
+        <div class="c2">
+            <div style="font-size: 25px; font-weight: bold;text-align: center;">
+                用户注册
+            </div>
+            <form id="fm" method="POST" action="/register.html">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                      {{ obj.username }} <span style="color: red">{{ obj.username.errors.0 }}</span>
+                </div>
+                <div class="form-group">
+                    <label for="nickname">昵称</label>
+                        {{ obj.nickname }} <span style="color: red">{{ obj.nickname.errors.0 }}</span>
+                </div>
+                <div class="form-group">
+                    <label for="email">邮箱</label>
+                    {{ obj.email }} <span style="color: red">{{ obj.email.errors.0 }}</span>
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    {{ obj.password }} <span style="color: red">{{ obj.password.errors.0 }}</span>
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">确认密码</label>
+                    {{ obj.repassword }}<span style="color: red">{{ obj.repassword.errors }}
+                </span>
+                </div>
+                    <div class="form-group">
+                        <label for="check_code">校验码</label>
+
+
+                        <div class="row">
+                            <div class="col-xs-7">
+                            {{ obj.check_code}} <span style="color: red"> {{ obj.check_code.errors.0 }}</span>
+                        </div>
+                        <div class="col-xs-5">
+                            <img src="/check_code.html" id="check_code_img">
+                        </div>
+                    </div>
+
+                </div>
+
+                <input type="submit" class="btn btn-default" value="登录"/>
+
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/jquery-1.12.4.js"></script>
+    <script>
+        $('#check_code_img').click(function () {
+            $(this).attr('src',$('#check_code_img').attr("src")+"?");
+
+        })
+
+
+    </script>
+</body>
+</html>
